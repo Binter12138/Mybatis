@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE  mapper  PUBLIC  "-//mybatis.org//DTD  Mapper  3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+    <!--
+        使用接口开发时候：
+            namespace等于mapper接口的地址。
+            mapper接口中的方法和mapper.xml中statement的id一致。
+            mapper接口中方法输入参数类型和mapper.xml中的statement的parameterType指定的类型一致。
+            mapper接口中的返回值类型和mapper.xml中的statement的resultType指定的类型一致
+
+
+
+    -->
+    <mapper namespace="mapper.UserMapper">
+
+    <!--根据id进行查询-->
+    <select id="getUser" parameterType="int" resultType="entity.User">
+
+        SELECT *FROM users WHERE id=#{id}
+    </select>
+
+
+    <!--
+        根据名称进行模糊查询
+        resultType:指定的是单条记录所映射的java对象类型
+
+        ${}:表示拼接sql串，将接收到的参数不加任何修饰拼接在sql中。
+        注意：使用${}拼接sql，引起sql注入,不建议使用
+        ${value}:接收输入参数的内容，如果传入参数是简单类型，${}只能用value
+    -->
+    <!--<select id="findByUserName" parameterType="String" resultType="entity.User">
+        SELECT *FROM users WHERE NAME LIKE '%${value}%'
+
+    </select>-->
+
+    <select id="findByUserName" parameterType="String" resultType="entity.User">
+        SELECT *FROM users WHERE NAME LIKE CONCAT(CONCAT('%',#{name}),'%')
+
+    </select>
+
+
+    <!--
+
+        添加用户
+    -->
+    <insert id="insertUser">
+
+        <!--
+        SELECT LAST_INSERT_ID():得到刚insert进去的主键值，自适用于自增主键
+        order：SELECT LAST_INSERT_ID()执行顺序，相对于insert语句
+        resultType：指定SELECT LAST_INSERT_ID()的结果类型
+
+          非自增长返回：使用MySQLuuid生成主键
+           <selectKey keyProperty="id" order="BEFORE" resultType="String">
+            SELECT uuid()
+            </selectKey>
+
+            首先执行uuid()得到主键，将主键设置到user对象的id属性中
+            其次在insert执行时，从user对象中取出id属性值
+        -->
+
+        <selectKey keyProperty="id" order="AFTER" resultType="Integer">
+
+            SELECT LAST_INSERT_ID()
+
+        </selectKey>
+        INSERT INTO users(id,name,age) VALUE (#{id},#{name},#{age})
+    </insert>
+
+
+
+
+
+    </mapper>
